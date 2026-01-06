@@ -1,8 +1,9 @@
 from django.shortcuts import render,redirect
-from .forms import SignupForm,LoginForm
+from .forms import SignupForm,LoginForm,ForgotPasswordForm
 from django.contrib import messages
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
+from django.contrib.auth.models import User
 
 def index(request):
     return render(request,'index.html')
@@ -34,3 +35,23 @@ def dashboard(request):
 def logout(request):
     auth_logout(request)
     return redirect('login')
+
+#FORGOT PASSWORD 
+
+def forgotpassword(request):
+    form = ForgotPasswordForm()
+
+    if request.method == "POST":
+        form = ForgotPasswordForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password1']
+
+            user = User.objects.get(username=username)
+            user.set_password(password)
+            user.save()
+
+            messages.success(request, "Password reset successfully.")
+            return redirect('login')
+
+    return render(request, 'forgotpassword.html', {'form': form})
